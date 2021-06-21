@@ -61,13 +61,18 @@ defmodule Example.ClientTransactionHandler do
       only: [assert_schema: 3]
 
     body_params = conn.body_params
-    #assert_schema(body_params, ClientTransactionRequest, Example.ApiSpec.spec())
     Logger.debug(%{desc: "entry", body: body_params, module: __MODULE__})
+    ## If I uncomment the following assertion, `mix test` fails on it.
+    ## Why doesn't the `OpenApiSpex.Plug.CastAndValidate` catch that on validation?
+    assert_schema(body_params, ClientTransactionRequest, Example.ApiSpec.spec())
     ## debug end
 
     ## other request processing
     code = 200
-    response = Jason.encode!(%{"fake-response": "123qwe"})
+    response = Jason.encode!(%{
+      "fake-response": "123qwe",
+      "description": "which should not reach the test case, since validation should fail"
+    })
 
     conn
     |> Plug.Conn.put_resp_header("content-type", "application/json")
